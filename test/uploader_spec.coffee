@@ -354,6 +354,27 @@ describe "uploader", ->
       expect(error?).to.be true
       expect(error.message).to.contain "is invalid"
 
+  describe "remote urls ", ()->
+    writeSpy = undefined
+
+    beforeEach ->
+      writeSpy = sinon.spy(ClientRequest.prototype, 'write')
+
+    afterEach ->
+      writeSpy.restore()
+
+    it "should send s3:// URLs to server", ()->
+      cloudinary.v2.uploader.upload("s3://test/1.jpg", tags: UPLOAD_TAGS)
+      sinon.assert.calledWith(writeSpy, sinon.match(helper.uploadParamMatcher('file', "s3://test/1.jpg")))
+      
+    it "should send gs:// URLs to server", ()->
+      cloudinary.v2.uploader.upload("gs://test/1.jpg", tags: UPLOAD_TAGS)
+      sinon.assert.calledWith(writeSpy, sinon.match(helper.uploadParamMatcher('file', "gs://test/1.jpg")))
+
+    it "should send ftp:// URLs to server", ()->
+      cloudinary.v2.uploader.upload("ftp://example.com/1.jpg", tags: UPLOAD_TAGS)
+      sinon.assert.calledWith(writeSpy, sinon.match(helper.uploadParamMatcher('file', "ftp://example.com/1.jpg")))
+
       
   describe "upload_chunked", ()->
     @timeout helper.TIMEOUT_LONG * 10
